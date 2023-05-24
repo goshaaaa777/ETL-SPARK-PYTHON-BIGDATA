@@ -1,0 +1,103 @@
+-- Databricks notebook source
+SHOW PARTITIONS PRUEBA.TRANSACCION;
+
+-- COMMAND ----------
+
+--borramos particiones si existen
+ALTER TABLE PRUEBA.TRANSACCION DROP IF EXISTS PARTITION(FECHA='2018-01-21');
+ALTER TABLE PRUEBA.TRANSACCION DROP IF EXISTS PARTITION(FECHA='2018-01-22');
+
+-- COMMAND ----------
+
+SHOW PARTITIONS PRUEBA.TRANSACCION;
+
+-- COMMAND ----------
+
+  SELECT COUNT(*) FROM PRUEBA.TRANSACCION;
+
+-- COMMAND ----------
+
+-- MAGIC %fs ls /databases/PRUEBA/TRANSACCION
+
+-- COMMAND ----------
+
+-- MAGIC %fs rm -r /databases/PRUEBA/TRANSACCION/fecha=2018-01-21
+
+-- COMMAND ----------
+
+-- MAGIC %fs rm -r /databases/PRUEBA/TRANSACCION/fecha=2018-01-22
+
+-- COMMAND ----------
+
+CREATE TABLE PRUEBA.TRANSACCION_SIN_PARTICIONAR(
+	ID_PERSONA STRING,
+	ID_EMPRESA STRING,
+	MONTO DOUBLE,
+	FECHA STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+LINES TERMINATED BY '\n'
+STORED AS TEXTFILE
+LOCATION '/databases/PRUEBA/TRANSACCION_SIN_PARTICIONAR'
+TBLPROPERTIES(
+    'skip.header.line.count'='1',
+    'store.charset'='ISO-8859-1', 
+    'retrieve.charset'='ISO-8859-1'
+);
+
+-- COMMAND ----------
+
+-- MAGIC %fs cp /FileStore/transacciones.data /databases/PRUEBA/TRANSACCION_SIN_PARTICIONAR
+
+-- COMMAND ----------
+
+SELECT COUNT(*) FROM PRUEBA.TRANSACCION_SIN_PARTICIONAR;
+
+-- COMMAND ----------
+
+SELECT DISTINCT  T.FECHA FROM PRUEBA.TRANSACCION_SIN_PARTICIONAR T;
+
+-- COMMAND ----------
+
+SET hive.exec.dynamic.partition=true;
+SET hive.exec.dynamic.partition.mode=nostrict;
+
+-- COMMAND ----------
+
+INSERT INTO TABLE PRUEBA.TRANSACCION PARTITION (FECHA)
+	SELECT
+		T.*
+	FROM
+		PRUEBA.TRANSACCION_SIN_PARTICIONAR T;
+
+-- COMMAND ----------
+
+SHOW PARTITIONS PRUEBA.TRANSACCION;
+
+-- COMMAND ----------
+
+SELECT COUNT(*) FROM PRUEBA.TRANSACCION;
+
+-- COMMAND ----------
+
+-- MAGIC %fs ls /databases/PRUEBA/TRANSACCION
+
+-- COMMAND ----------
+
+-- MAGIC %fs ls /databases/PRUEBA/TRANSACCION/fecha=2018-01-21
+
+-- COMMAND ----------
+
+-- MAGIC %fs head /databases/PRUEBA/TRANSACCION/fecha=2018-01-21/part-00000-tid-1146639398133933740-7c29d2d2-6d16-48b6-9ac2-4b8ff57f383f-9-1.c000
+
+-- COMMAND ----------
+
+
+
+-- COMMAND ----------
+
+
+
+-- COMMAND ----------
+

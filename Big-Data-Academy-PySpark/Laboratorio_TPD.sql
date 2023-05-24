@@ -1,0 +1,48 @@
+-- Databricks notebook source
+CREATE  TABLE PRUEBA.TRANSACCION(
+   ID_PERSONA STRING,
+   ID_EMPRESA STRING,
+   MONTO DOUBLE
+)
+PARTITIONED BY (FECHA STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+LINES TERMINATED BY '\n'
+STORED AS TEXTFILE
+LOCATION '/databases/PRUEBA/TRANSACCION'
+TBLPROPERTIES(
+    'skip.header.line.count'='1',
+    'store.charset'='ISO-8859-1', 
+    'retrieve.charset'='ISO-8859-1'
+);
+
+-- COMMAND ----------
+
+LOAD DATA LOCAL INPATH 'dbfs:/FileStore/transacciones_2018_01_21.data'
+INTO TABLE PRUEBA.TRANSACCION
+PARTITION(FECHA='2018-01-21');
+
+-- COMMAND ----------
+
+SELECT * FROM PRUEBA.TRANSACCION LIMIT 10;
+
+-- COMMAND ----------
+
+SHOW PARTITIONS PRUEBA.TRANSACCION
+
+-- COMMAND ----------
+
+-- MAGIC %fs ls /databases/PRUEBA/TRANSACCION
+
+-- COMMAND ----------
+
+LOAD DATA LOCAL INPATH 'dbfs:/FileStore/transacciones_2018_01_22.data'
+INTO TABLE PRUEBA.TRANSACCION
+PARTITION(FECHA='2018-01-22');
+
+-- COMMAND ----------
+
+-- MAGIC %fs ls /databases/PRUEBA/TRANSACCION
+
+-- COMMAND ----------
+

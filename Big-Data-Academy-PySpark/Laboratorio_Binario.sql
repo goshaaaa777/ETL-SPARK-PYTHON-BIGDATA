@@ -1,0 +1,130 @@
+-- Databricks notebook source
+  CREATE TABLE PRUEBA.PERSONA_TEXTFILE(
+    ID STRING,
+    NOMBRE STRING,
+    TELEFONO STRING,
+    CORREO STRING,
+    FECHA_INGRESO DATE,
+    EDAD INT,
+    SALARIO DOUBLE,
+    ID_EMPRESA STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+LINES TERMINATED BY '\n'
+STORED AS TEXTFILE
+LOCATION '/databases/PRUEBA/PERSONA_TEXTFIE'
+TBLPROPERTIES(
+    'skip.header.line.count'='1',
+    'store.charset'='ISO-8859-1', 
+    'retrieve.charset'='ISO-8859-1'
+);
+
+-- COMMAND ----------
+
+-- MAGIC %fs cp /FileStore/personaDATA.data  /databases/PRUEBA/PERSONA_TEXTFIE
+
+-- COMMAND ----------
+
+SELECT * FROM PRUEBA.PERSONA_TEXTFILE LIMIT 10;
+
+-- COMMAND ----------
+
+-- MAGIC %fs cp /FileStore/personaDATA.data /databases/PRUEBA/PERSONA_TEXTFILE
+
+-- COMMAND ----------
+
+CREATE TABLE PRUEBA.PERSONA_PARQUET(
+	ID STRING,
+	NOMBRE STRING,
+	TELEFONO STRING,
+	CORREO STRING,
+	FECHA_INGRESO STRING,
+	EDAD INT,
+	SALARIO DOUBLE,
+	ID_EMPRESA STRING
+)
+STORED AS PARQUET
+LOCATION '/databases/PRUEBA/PERSONA_PARQUET'
+TBLPROPERTIES (
+	'parquet.compression'='SNAPPY',
+	'store.charset'='ISO-8859-1', 
+    'retrieve.charset'='ISO-8859-1'
+);
+
+
+-- COMMAND ----------
+
+SET hive.exec.compress.output=TRUE;
+SET PARQUET.compression=SNAPPY;
+
+-- COMMAND ----------
+
+INSERT INTO TABLE PRUEBA.PERSONA_PARQUET
+SELECT * FROM PRUEBA.PERSONA_TEXTFILE;
+
+-- COMMAND ----------
+
+SELECT COUNT(*) FROM PRUEBA.PERSONA_PARQUET
+
+-- COMMAND ----------
+
+-- MAGIC %fs head /databases/PRUEBA/PERSONA_TEXTFIE/personaDATA.data
+
+-- COMMAND ----------
+
+SELECT * FROM PRUEBA.PERSONA_PARQUET LIMIT 10;
+
+-- COMMAND ----------
+
+-- MAGIC %fs ls /databases/PRUEBA/PERSONA_PARQUET
+
+-- COMMAND ----------
+
+-- MAGIC %fs head /databases/PRUEBA/PERSONA_PARQUET/part-00000-tid-3803494309942284345-cd853dc1-baa0-4409-9a29-50f61a83f3b7-19-1-c000.snappy.parquet
+
+-- COMMAND ----------
+
+CREATE TABLE PRUEBA.PERSONA_ORC(
+	ID STRING,
+	NOMBRE STRING,
+	TELEFONO STRING,
+	CORREO STRING,
+	FECHA_INGRESO DATE,
+	EDAD INT,
+	SALARIO DOUBLE,
+	ID_EMPRESA STRING
+)
+STORED AS ORC
+LOCATION '/databases/PERSONA/PERSONA_ORC'
+TBLPROPERTIES (
+	'orc.compression'='SNAPPY',
+	'store.charset'='ISO-8859-1', 
+    'retrieve.charset'='ISO-8859-1'
+);
+
+
+-- COMMAND ----------
+
+SET hive.compression=SNAPPY;
+SET hive.exec.compress.output=TRUE;
+
+-- COMMAND ----------
+
+
+
+-- COMMAND ----------
+
+INSERT INTO TABLE PRUEBA.PERSONA_ORC
+SELECT * FROM PRUEBA.PERSONA_TEXTFILE;
+
+-- COMMAND ----------
+
+SELECT COUNT(*)FROM PRUEBA.PERSONA_TEXTFILE;
+
+-- COMMAND ----------
+
+-- MAGIC %fs ls /databases/PERSONA/PERSONA_ORC
+
+-- COMMAND ----------
+
